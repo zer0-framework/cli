@@ -23,6 +23,9 @@
     "autoload": {
         "classmap": ["src/"]
     },
+    "bin": [
+        "bin/cli"
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }
