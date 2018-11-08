@@ -12,13 +12,20 @@
             "role"      : "Maintainer"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/kakserpom/Console"
+        }
+    ],
     "support" : {
         "email" : "kak.serpom.po.yaitsam@gmail.com",
         "issues": "https://github.com/Zer0-Framework/Cli/issues"
     },
     "require": {
         "php": ">=7.2",
-        "Zer0-Framework/Zer0": "*"
+        "Zer0-Framework/Zer0": "*",
+        "hoa/console": "dev-master as 3.17.0"
     },
     "autoload": {
         "classmap": ["src/"]
