@@ -63,7 +63,6 @@ abstract class AbstractController implements ControllerInterface
      */
     public function historyAction(): void
     {
-        echo 123 . PHP_EOL;
         readfile($this->historyFile);
     }
 
@@ -92,6 +91,10 @@ abstract class AbstractController implements ControllerInterface
                 continue;
             }
             $action = lcfirst(substr($method, 0, -6));
+            $action = preg_replace_callback('~[A-Z\d]+~', function($match) {
+                return '-' . strtolower($match[0]);
+            }, $action);
+
             if (in_array($action, $this->specialCommands) || $action === 'index') {
                 continue;
             }
@@ -101,7 +104,7 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @throws InternalRedirect
+     * @throws In2ternalRedirect
      */
     public function indexAction(): void
     {

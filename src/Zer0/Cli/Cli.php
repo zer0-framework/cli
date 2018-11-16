@@ -141,7 +141,7 @@ class Cli
                 $action = 'index';
             }
 
-            $method = strtolower($action) . 'Action';
+            $method = str_replace(' ', '', ucwords(str_replace('-' , ' ', $action))) . 'Action';
 
             $controller = $this->instantiateController($controllerClass);
 
