@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-require 'vendor/Zer0-Framework/Zer0/src/bootstrap-cli.php';
+require 'vendor/Zer0-Framework/Zer0/src/bootstrap.php';
 
 /**
  * @var \Zer0\Cli\Cli $cli
