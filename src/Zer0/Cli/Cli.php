@@ -37,6 +37,13 @@ class Cli
     public function __construct(ConfigInterface $config, App $app)
     {
         $this->config = $config;
+        if ($this->config->env) {
+            foreach ($this->config->env as $key => $value) {
+                putenv($key . '=' . $value);
+                $_ENV[$key] = $value;
+                $_SERVER[$key] = $value;
+            }
+        }
         $this->app = $app;
     }
 
