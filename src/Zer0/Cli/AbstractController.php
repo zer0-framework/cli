@@ -55,7 +55,9 @@ abstract class AbstractController implements ControllerInterface
     {
         $this->app = $app;
         $this->cli = $cli;
-        $this->historyFile = $_SERVER['HOME'] . '/.zer0_history';
+        $this->historyFile = isset($_SERVER['HOME'])
+                ? $_SERVER['HOME'] . '/.zer0_history'
+                : '/dev/null';
     }
 
     /**
