@@ -5,7 +5,7 @@ require 'vendor/zer0-framework/core/src/bootstrap.php';
 /**
  * @var \Zer0\Cli\Cli $cli
  */
-$cli = $app->broker('Cli')->get();
+$cli = $app->factory('Cli');
 $cli->setProcTitle('cli');
 $cli->listenToSignals();
 $cli->route();
