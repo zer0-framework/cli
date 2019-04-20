@@ -1,8 +1,8 @@
 {
-    "name"  : "Zer0-Framework/Cli",
+    "name"  : "zer0-framework/cli",
     "type"  : "library",
     "keywords": ["Zer0", "highload"],
-    "homepage": "https://github.com/Zer0-Framework/Cli",
+    "homepage": "https://github.com/zer0-framework/cli",
     "license" : "GPL-3.0-or-later",
     "description": "",
     "authors" : [
@@ -20,11 +20,11 @@
     ],
     "support" : {
         "email" : "kak.serpom.po.yaitsam@gmail.com",
-        "issues": "https://github.com/Zer0-Framework/Cli/issues"
+        "issues": "https://github.com/zer0-framework/cli/issues"
     },
     "require": {
         "php": ">=7.2",
-        "Zer0-Framework/Zer0": "*",
+        "zer0-framework/core": "*",
         "hoa/console": "dev-master as 3.17.0"
     },
     "autoload": {

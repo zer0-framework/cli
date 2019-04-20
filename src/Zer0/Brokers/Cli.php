@@ -19,4 +19,13 @@ class Cli extends Base
     {
         return new \Zer0\Cli\Cli($config, $this->app);
     }
+    /**
+     * @param string $name
+     * @param bool $caching
+     * @return \Zer0\Cli\Cli
+     */
+    public function get(string $name = '', bool $caching = true): \Zer0\Cli\Cli
+    {
+        return parent::get($name, $caching);
+    }
 }
