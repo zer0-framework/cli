@@ -72,7 +72,7 @@ class Cli
     /**
      *
      */
-    public function asyncSignals(): void
+    public function asyncSignals()
     {
         return pcntl_async_signals(...func_get_args());
     }
