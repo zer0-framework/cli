@@ -72,9 +72,16 @@ class Cli
     /**
      *
      */
+    public function asyncSignals(): void
+    {
+        return pcntl_async_signals(...func_get_args());
+    }
+
+    /**
+     *
+     */
     public function listenToSignals(): void
     {
-        pcntl_async_signals(true);
         pcntl_signal(SIGINT, function () {
             if ($this->interactiveMode) {
                 $this->interactiveMode = false;
@@ -83,6 +90,9 @@ class Cli
                 exit(0);
             }
         }, false);
+        register_tick_function(function () {
+            pcntl_signal_dispatch();
+        });
     }
 
     /**
@@ -148,7 +158,7 @@ class Cli
                 $action = 'index';
             }
 
-            $method = str_replace(' ', '', ucwords(str_replace('-' , ' ', $action))) . 'Action';
+            $method = str_replace(' ', '', ucwords(str_replace('-', ' ', $action))) . 'Action';
 
             $controller = $this->instantiateController($controllerClass);
 
@@ -267,8 +277,7 @@ class Cli
 
         if ($var === null) {
             $this->write('null');
-        }
-        elseif (is_scalar($var)) {
+        } elseif (is_scalar($var)) {
             if (is_string($var)) {
                 $this->write('"', $styleScheme['quote']);
                 $this->write(
