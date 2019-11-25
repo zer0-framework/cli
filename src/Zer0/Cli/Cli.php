@@ -82,6 +82,7 @@ class Cli
      */
     public function listenToSignals(): void
     {
+        $this->asyncSignals(true);
         pcntl_signal(SIGINT, function () {
             if ($this->interactiveMode) {
                 $this->interactiveMode = false;
