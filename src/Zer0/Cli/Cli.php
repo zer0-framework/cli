@@ -230,7 +230,7 @@ class Cli
      */
     public function writeln(string $text, string $style = null): void
     {
-      $this->write($text . PHP_EOL);
+      $this->write($text . PHP_EOL, $style);
     }
 
     /**
