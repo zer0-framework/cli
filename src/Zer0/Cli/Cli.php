@@ -230,33 +230,25 @@ class Cli
      */
     public function writeln(string $text, string $style = null): void
     {
-        if (!$this->colorize) {
-            $style = null;
-        }
-
-        echo $text . PHP_EOL;
-
-        if ($style !== null) {
-            Cursor::colorize('n');
-        }
+      $this->write($text . PHP_EOL);
     }
 
     /**
      * @param string $line
      */
-    public function successLine(string $line): void
+    public function successLine(string $line, bool $eol = true): void
     {
         $this->write('√', 'fg(green)');
-        echo ' ' . $line . PHP_EOL;
+        echo ' ' . $line . ($eol ? PHP_EOL : '');
     }
 
     /**
      * @param string $line
      */
-    public function errorLine(string $line): void
+    public function errorLine(string $line, bool $eol = true): void
     {
         $this->write('X', 'fg(red)');
-        echo ' ' . $line . PHP_EOL;
+        echo ' ' . $line . ($eol ? PHP_EOL : '');
     }
 
     /**
