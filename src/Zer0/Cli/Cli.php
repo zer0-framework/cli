@@ -30,7 +30,7 @@ class Cli
 
 
     /**
-     * HTTP constructor.
+     * Cli constructor.
      * @param ConfigInterface $config
      * @param App $app
      */
@@ -132,15 +132,25 @@ class Cli
      */
     public function instantiateController(string $controllerClass): AbstractController
     {
+        $defaultPrefix = $this->config->default_controller_ns . '\\';
+
         if (substr($controllerClass, 0, 1) !== '\\') {
-            $controllerClass = $this->config->default_controller_ns . '\\' . $controllerClass;
+            $controllerClass = $defaultPrefix . $controllerClass;
         }
 
         if (!class_exists($controllerClass) || !class_implements($controllerClass, ControllerInterface::class)) {
             throw new NotFound('Controller ' . $controllerClass . ' not found 😞');
         }
 
-        return new $controllerClass($this, $this->app);
+        $configName = $controllerClass;
+        $config = $this->config->Controllers->{$configName} ?? null;
+
+        if ($config === null && strpos($configName, $defaultPrefix) === 0) {
+            $configName = substr($configName, strlen($defaultPrefix));
+            $config = $this->config->Controllers->{$configName} ?? null;
+        }
+
+        return new $controllerClass($this, $this->app, $config);
     }
 
     /**

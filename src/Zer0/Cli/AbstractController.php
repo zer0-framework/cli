@@ -8,6 +8,7 @@ use Hoa\Console\Readline\Readline;
 use Zer0\App;
 use Zer0\Cli\Exceptions\InternalRedirect;
 use Zer0\Cli\Intefarces\ControllerInterface;
+use Zer0\Config\Interfaces\ConfigInterface;
 
 /**
  * Class AbstractController
@@ -47,17 +48,23 @@ abstract class AbstractController implements ControllerInterface
     protected $timestamp;
 
     /**
+     * @var ConfigInterface
+     */
+    protected $config;
+
+    /**
      * AbstractController constructor.
      * @param Cli $cli
      * @param \Zer0\App $app
      */
-    public function __construct(Cli $cli, App $app)
+    public function __construct(Cli $cli, App $app, ?ConfigInterface $config)
     {
         $this->app = $app;
         $this->cli = $cli;
+        $this->config = $config;
         $this->historyFile = isset($_SERVER['HOME'])
-                ? $_SERVER['HOME'] . '/.zer0_history'
-                : '/dev/null';
+            ? $_SERVER['HOME'] . '/.zer0_history'
+            : '/dev/null';
     }
 
     /**
@@ -93,7 +100,7 @@ abstract class AbstractController implements ControllerInterface
                 continue;
             }
             $action = lcfirst(substr($method, 0, -6));
-            $action = preg_replace_callback('~[A-Z\d]+~', function($match) {
+            $action = preg_replace_callback('~[A-Z\d]+~', function ($match) {
                 return '-' . strtolower($match[0]);
             }, $action);
 
@@ -130,7 +137,8 @@ abstract class AbstractController implements ControllerInterface
      */
     public function readline(callable $callback, callable $getAutocompleteWords): void
     {
-        $rl = new class($this, $this->historyFile, $getAutocompleteWords) extends Readline {
+        $rl = new class($this, $this->historyFile, $getAutocompleteWords) extends Readline
+        {
             /**
              * @var AbstractController
              */
@@ -185,7 +193,8 @@ abstract class AbstractController implements ControllerInterface
                 }
             }
         };
-        $autocompleter = new class([]) extends Word {
+        $autocompleter = new class([]) extends Word
+        {
             /**
              * @var callable
              */

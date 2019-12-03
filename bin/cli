@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
-require 'vendor/zer0-framework/core/src/bootstrap.php';
+define('ZERO_ROOT', realpath(__DIR__ . '/../../../..'));
+
+require_once ZERO_ROOT . '/vendor/zer0-framework/core/src/bootstrap.php';
 
 /**
  * @var \Zer0\Cli\Cli $cli
@@ -9,3 +11,4 @@ $cli = $app->factory('Cli');
 $cli->setProcTitle('cli');
 $cli->listenToSignals();
 $cli->route();
+
