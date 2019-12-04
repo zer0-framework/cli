@@ -240,7 +240,7 @@ class Cli
      */
     public function writeln(string $text, string $style = null): void
     {
-      $this->write($text . PHP_EOL, $style);
+        $this->write($text . PHP_EOL, $style);
     }
 
     /**
@@ -265,7 +265,16 @@ class Cli
      * @param mixed $var
      * @param string $style
      */
-    public function colorfulJson($var, ?string $style = null): void
+    public function colorfulJson($var): void
+    {
+        $this->_colorfulJson($var);
+    }
+
+    /**
+     * @param mixed $var
+     * @param string $style
+     */
+    private function _colorfulJson($var, ?string $style = null, array $stack = []): void
     {
         $styleScheme = [
             'bracket' => 'fg(green)',
@@ -305,10 +314,16 @@ class Cli
                     $this->write(', ', $styleScheme['comma']);
                 }
                 if (!$isArray) {
-                    $this->colorfulJson($key, (is_scalar($value) || is_null($value)) ? $styleScheme['key_scalar'] : $styleScheme['key']);
+                    $this->_colorfulJson($key, (is_scalar($value) || is_null($value)) ? $styleScheme['key_scalar'] : $styleScheme['key']);
                     $this->write(': ', $styleScheme['colon']);
                 }
-                $this->colorfulJson($value);
+                if (in_array($value, $stack, true)) {
+                    $this->write('**RECURSION**');
+                } else {
+                    $stack[] = $value;
+                    $this->_colorfulJson($value, $style, $stack);
+                    array_pop($value);
+                }
                 ++$i;
             }
             $this->write($isArray ? ']' : '}', $styleScheme['bracket']);
