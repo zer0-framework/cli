@@ -322,7 +322,7 @@ class Cli
                 } else {
                     $stack[] = $value;
                     $this->_colorfulJson($value, $style, $stack);
-                    array_pop($value);
+                    array_pop($stack);
                 }
                 ++$i;
             }
