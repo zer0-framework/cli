@@ -262,6 +262,15 @@ class Cli
     }
 
     /**
+     * @param string $line
+     */
+    public function warningLine(string $line, bool $eol = true): void
+    {
+        $this->write('~', 'fg(yellow)');
+        echo ' ' . $line . ($eol ? PHP_EOL : '');
+    }
+
+    /**
      * @param mixed $var
      * @param string $style
      */
