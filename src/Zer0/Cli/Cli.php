@@ -54,6 +54,14 @@ class Cli
     public function setProcTitle($title = null): void
     {
         cli_set_process_title(implode(' ', $_SERVER['argv']) . ($title !== null ? ' (' . $title . ')' : ''));
+    }
+
+    /**
+     * Change the tab title
+     * @param string $title
+     */
+    public function setTabTitle($title = null): void
+    {
         print "\033]0;$title\007";
     }
 
