@@ -28,6 +28,11 @@ class Cli
      */
     protected $colorize = true;
 
+    /**
+     * @var bool
+     */
+    protected $silent = false;
+
 
     /**
      * Cli constructor.
@@ -47,6 +52,11 @@ class Cli
         $this->app = $app;
     }
 
+    public function silent(bool $silent): void
+    {
+        $this->silent = $silent;
+    }
+    
     /**
      * Change the process title
      * @param string $title
@@ -95,7 +105,9 @@ class Cli
             if ($this->interactiveMode) {
                 $this->interactiveMode = false;
             } else {
-                echo PHP_EOL . 'Bye! 👋' . PHP_EOL;
+                if (!$this->silent) {
+                    echo PHP_EOL . 'Bye! 👋' . PHP_EOL;
+                }
                 exit(0);
             }
         }, false);
