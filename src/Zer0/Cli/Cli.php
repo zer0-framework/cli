@@ -14,6 +14,7 @@ use Zer0\Config\Interfaces\ConfigInterface;
 
 /**
  * Class Cli
+ *
  * @package Zer0\Cli
  */
 class Cli
@@ -33,64 +34,68 @@ class Cli
      */
     protected $silent = false;
 
-
     /**
      * Cli constructor.
+     *
      * @param ConfigInterface $config
-     * @param App $app
+     * @param App             $app
      */
-    public function __construct(ConfigInterface $config, App $app)
+    public function __construct (ConfigInterface $config, App $app)
     {
         $this->config = $config;
         if ($this->config->env) {
             foreach ($this->config->env as $key => $value) {
                 putenv($key . '=' . $value);
-                $_ENV[$key] = $value;
+                $_ENV[$key]    = $value;
                 $_SERVER[$key] = $value;
             }
         }
         $this->app = $app;
     }
 
-    public function silent(bool $silent): void
+    public function silent (bool $silent): void
     {
         $this->silent = $silent;
     }
-    
+
     /**
      * Change the process title
+     *
      * @param string $title
      */
-    public function setProcTitle($title = null): void
+    public function setProcTitle ($title = null): void
     {
         cli_set_process_title(implode(' ', $_SERVER['argv']) . ($title !== null ? ' (' . $title . ')' : ''));
     }
 
     /**
      * Change the tab title
+     *
      * @param string $title
      */
-    public function setTabTitle($title = null): void
+    public function setTabTitle ($title = null): void
     {
         print "\033]0;$title\007";
     }
 
     /**
      * @param bool|null $mode
+     *
      * @return bool
      */
-    public function interactiveMode(?bool $mode = null): bool
+    public function interactiveMode (?bool $mode = null): bool
     {
         if ($mode === null) {
             return $this->interactiveMode;
         }
+
         return $this->interactiveMode = $mode;
     }
 
     /**
      *
      */
-    public function asyncSignals()
+    public function asyncSignals ()
     {
         return pcntl_async_signals(...func_get_args());
     }
@@ -98,33 +103,41 @@ class Cli
     /**
      *
      */
-    public function listenToSignals(): void
+    public function listenToSignals (): void
     {
         $this->asyncSignals(true);
-        pcntl_signal(SIGINT, function () {
-            if ($this->interactiveMode) {
-                $this->interactiveMode = false;
-            } else {
-                if (!$this->silent) {
-                    echo PHP_EOL . 'Bye! 👋' . PHP_EOL;
+        pcntl_signal(
+            SIGINT,
+            function () {
+                if ($this->interactiveMode) {
+                    $this->interactiveMode = false;
                 }
-                exit(0);
+                else {
+                    if (!$this->silent) {
+                        echo PHP_EOL . 'Bye! 👋' . PHP_EOL;
+                    }
+                    exit(0);
+                }
+            },
+            false
+        );
+        register_tick_function(
+            function () {
+                pcntl_signal_dispatch();
             }
-        }, false);
-        register_tick_function(function () {
-            pcntl_signal_dispatch();
-        });
+        );
     }
 
     /**
      * @param null|string $command
      */
-    public function route(?string $command = null)
+    public function route (?string $command = null)
     {
         if ($command !== null) {
             $args = preg_split('~\s+~', $command);
             array_unshift($args, $_SERVER['argv'][0]);
-        } else {
+        }
+        else {
             $args = $_SERVER['argv'];
         }
         array_shift($args);
@@ -136,10 +149,11 @@ class Cli
         if ($route) {
             $route['action'] = array_shift($args);
             $route['action'] = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $route['action']))));
-        } else {
+        }
+        else {
             $route = [
                 'controller' => '\\' . Index::class,
-                'action' => $command,
+                'action'     => $command,
             ];
         }
         $this->handleCommand($route['controller'], $route['action'] ?? 'index', $args);
@@ -147,10 +161,11 @@ class Cli
 
     /**
      * @param string $controllerClass
+     *
      * @return AbstractController
      * @throws NotFound
      */
-    public function instantiateController(string $controllerClass): AbstractController
+    public function instantiateController (string $controllerClass): AbstractController
     {
         $defaultPrefix = $this->config->default_controller_ns . '\\';
 
@@ -163,11 +178,11 @@ class Cli
         }
 
         $configName = $controllerClass;
-        $config = $this->config->Controllers->{$configName} ?? null;
+        $config     = $this->config->Controllers->{$configName} ?? null;
 
         if ($config === null && strpos($configName, $defaultPrefix) === 0) {
             $configName = substr($configName, strlen($defaultPrefix));
-            $config = $this->config->Controllers->{$configName} ?? null;
+            $config     = $this->config->Controllers->{$configName} ?? null;
         }
 
         return new $controllerClass($this, $this->app, $config);
@@ -176,10 +191,11 @@ class Cli
     /**
      * @param string $controllerClass
      * @param string $action
-     * @param array $args
+     * @param array  $args
+     *
      * @return void
      */
-    public function handleCommand(string $controllerClass, string $action, array $args = []): void
+    public function handleCommand ($controllerClass, string $action, array $args = []): void
     {
         try {
             if ($controllerClass === '') {
@@ -191,7 +207,9 @@ class Cli
 
             $method = str_replace(' ', '', ucwords(str_replace('-', ' ', $action))) . 'Action';
 
-            $controller = $this->instantiateController($controllerClass);
+            $controller = $controllerClass instanceof ControllerInterface
+                ? $controllerClass
+                : $this->instantiateController($controllerClass);
 
             if (!method_exists($controller, $method)) {
                 throw new NotFound($action . ': command not found 😞');
@@ -211,10 +229,15 @@ class Cli
         } catch (InternalRedirect $redirect) {
             if ($redirect->command !== null) {
                 $this->route($redirect->command);
-            } else {
+            }
+            else {
                 $this->handleCommand($redirect->controller, $redirect->action, $redirect->args);
             }
         } catch (\Throwable $exception) {
+            if (isset($controller) && $controller->onException($exception)) {
+                return;
+            }
+
             $this->handleException($exception);
         }
     }
@@ -222,10 +245,11 @@ class Cli
     /**
      * @param \Throwable $exception
      */
-    public function handleException(\Throwable $exception): void
+    public function handleException (\Throwable $exception): void
     {
         if ($exception instanceof InvalidArgument) {
             $this->writeln($exception->getMessage());
+
             return;
         }
         $this->write('Uncaught exception:', 'fg(white) bg(red)');
@@ -233,12 +257,11 @@ class Cli
         Cursor::bip();
     }
 
-
     /**
-     * @param string $text
+     * @param string      $text
      * @param string|null $style
      */
-    public function write(string $text, string $style = null): void
+    public function write (string $text, string $style = null): void
     {
         if (!$this->colorize) {
             $style = null;
@@ -253,12 +276,11 @@ class Cli
         }
     }
 
-
     /**
-     * @param string $text
+     * @param string      $text
      * @param string|null $style
      */
-    public function writeln(string $text, string $style = null): void
+    public function writeln (string $text, string $style = null): void
     {
         $this->write($text . PHP_EOL, $style);
     }
@@ -266,7 +288,7 @@ class Cli
     /**
      * @param string $line
      */
-    public function successLine(string $line, bool $eol = true): void
+    public function successLine (string $line, bool $eol = true): void
     {
         $this->write('√', 'fg(green)');
         echo ' ' . $line . ($eol ? PHP_EOL : '');
@@ -275,7 +297,7 @@ class Cli
     /**
      * @param string $line
      */
-    public function errorLine(string $line, bool $eol = true): void
+    public function errorLine (string $line, bool $eol = true): void
     {
         $this->write('X', 'fg(red)');
         echo ' ' . $line . ($eol ? PHP_EOL : '');
@@ -284,41 +306,42 @@ class Cli
     /**
      * @param string $line
      */
-    public function warningLine(string $line, bool $eol = true): void
+    public function warningLine (string $line, bool $eol = true): void
     {
         $this->write('~', 'fg(yellow)');
         echo ' ' . $line . ($eol ? PHP_EOL : '');
     }
 
     /**
-     * @param mixed $var
+     * @param mixed  $var
      * @param string $style
      */
-    public function colorfulJson($var): void
+    public function colorfulJson ($var): void
     {
         $this->_colorfulJson($var);
     }
 
     /**
-     * @param mixed $var
+     * @param mixed  $var
      * @param string $style
      */
-    private function _colorfulJson($var, ?string $style = null, array $stack = []): void
+    private function _colorfulJson ($var, ?string $style = null, array $stack = []): void
     {
         $styleScheme = [
-            'bracket' => 'fg(green)',
-            'quote' => 'fg(green)',
-            'comma' => 'fg(green)',
-            'colon' => 'fg(green)',
-            'key' => 'underlined fg(blue)',
+            'bracket'    => 'fg(green)',
+            'quote'      => 'fg(green)',
+            'comma'      => 'fg(green)',
+            'colon'      => 'fg(green)',
+            'key'        => 'underlined fg(blue)',
             'key_scalar' => 'fg(blue)',
-            'string' => '',
-            'integer' => '',
+            'string'     => '',
+            'integer'    => '',
         ];
 
         if ($var === null) {
             $this->write('null');
-        } elseif (is_scalar($var)) {
+        }
+        else if (is_scalar($var)) {
             if (is_string($var)) {
                 $this->write('"', $styleScheme['quote']);
                 $this->write(
@@ -326,13 +349,15 @@ class Cli
                     $style ?? $styleScheme[gettype($var)]
                 );
                 $this->write('"', $styleScheme['quote']);
-            } else {
+            }
+            else {
                 $this->write(
                     json_encode($var),
                     $style ?? $styleScheme[gettype($var)] ?? ''
                 );
             }
-        } else {
+        }
+        else {
             $isArray = is_array($var) && count(array_filter(array_keys($var), 'is_string')) === 0;
 
             $this->write($isArray ? '[' : '{', $styleScheme['bracket']);
@@ -343,12 +368,16 @@ class Cli
                     $this->write(', ', $styleScheme['comma']);
                 }
                 if (!$isArray) {
-                    $this->_colorfulJson($key, (is_scalar($value) || is_null($value)) ? $styleScheme['key_scalar'] : $styleScheme['key']);
+                    $this->_colorfulJson(
+                        $key,
+                        (is_scalar($value) || is_null($value)) ? $styleScheme['key_scalar'] : $styleScheme['key']
+                    );
                     $this->write(': ', $styleScheme['colon']);
                 }
                 if (in_array($value, $stack, true)) {
                     $this->write('**RECURSION**');
-                } else {
+                }
+                else {
                     $stack[] = $value;
                     $this->_colorfulJson($value, $style, $stack);
                     array_pop($stack);
