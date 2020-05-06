@@ -10,18 +10,15 @@ use Zer0\Cli\Exceptions\NotFound;
  * Class Index
  * @package Zer0\Cli\Controllers
  */
-final class Index extends AbstractController
+class Index extends AbstractController
 {
-
-
     /**
      * @throws InternalRedirect
      */
     public function indexAction(): void
     {
-        $commands = $this->cli->config->Commands->toArray();
         $this->readline(
-            function (array $parts) use ($commands): void {
+            function (array $parts): void {
                 $this->cli->route(implode(' ', $parts));
             },
             function (string $prefix): array {
@@ -76,14 +73,5 @@ final class Index extends AbstractController
         foreach ($this->getActions() as $name) {
             $this->cli->writeln("\t👉\t" . $name);
         }
-    }
-
-    /**
-     *
-     */
-    public function testAction()
-    {
-        //passthru('./cli/vendor/bin/fastest -x phpunit.xml "./cli/vendor/bin/phpunit {};"');
-        passthru('./cli/vendor/bin/phpunit');
     }
 }
