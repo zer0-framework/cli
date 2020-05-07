@@ -9,6 +9,7 @@ use Zer0\Cli\Exceptions\CliError;
 use Zer0\Cli\Exceptions\InternalRedirect;
 use Zer0\Cli\Exceptions\InvalidArgument;
 use Zer0\Cli\Exceptions\NotFound;
+use Zer0\Cli\Helpers\ArgumentsParser;
 use Zer0\Cli\Intefarces\ControllerInterface;
 use Zer0\Config\Interfaces\ConfigInterface;
 
@@ -134,7 +135,7 @@ class Cli
     public function route (?string $command = null)
     {
         if ($command !== null) {
-            $args = preg_split('~\s+~', $command);
+            $args = ArgumentsParser::parseString($command);
             array_unshift($args, $_SERVER['argv'][0]);
         }
         else {

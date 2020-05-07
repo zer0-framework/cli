@@ -7,6 +7,7 @@ use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
 use Zer0\App;
 use Zer0\Cli\Exceptions\InternalRedirect;
+use Zer0\Cli\Helpers\ArgumentsParser;
 use Zer0\Cli\Intefarces\ControllerInterface;
 use Zer0\Config\Interfaces\ConfigInterface;
 
@@ -266,7 +267,7 @@ abstract class AbstractController implements ControllerInterface
                 posix_kill(posix_getpid(), SIGINT);
                 continue;
             }
-            $parts = preg_split('~\s+~', $input);
+            $parts = ArgumentsParser::parseString($input);
             if (in_array(strtolower($parts[0]), ['help', '?'])) {
                 $this->helpAction();
                 continue;
