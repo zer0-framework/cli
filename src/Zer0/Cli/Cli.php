@@ -98,6 +98,9 @@ class Cli
      */
     public function asyncSignals ()
     {
+        // @TODO
+        return;
+
         return pcntl_async_signals(...func_get_args());
     }
 
@@ -106,6 +109,9 @@ class Cli
      */
     public function listenToSignals (): void
     {
+        // @TODO
+        return;
+
         $this->asyncSignals(true);
         pcntl_signal(
             SIGINT,
