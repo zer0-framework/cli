@@ -51,6 +51,9 @@ class Cli
                 $_SERVER[$key] = $value;
             }
         }
+        if (isset($_SERVER['NO_COLOR'])) {
+            $this->colorize = !$_SERVER['NO_COLOR'];
+        }
         $this->app = $app;
     }
 
