@@ -55,12 +55,19 @@ abstract class AbstractController implements ControllerInterface
     protected $config;
 
     /**
+     * @var array
+     */
+    protected $args;
+
+    /**
      * AbstractController constructor.
      *
-     * @param Cli       $cli
-     * @param \Zer0\App $app
+     * @param Cli             $cli
+     * @param \Zer0\App       $app
+     * @param ConfigInterface $config
+     * @param array           $args
      */
-    public function __construct (Cli $cli, App $app, ?ConfigInterface $config)
+    public function __construct (Cli $cli, App $app, ?ConfigInterface $config, array $args = [])
     {
         $this->app         = $app;
         $this->cli         = $cli;
@@ -68,6 +75,7 @@ abstract class AbstractController implements ControllerInterface
         $this->historyFile = isset($_SERVER['HOME'])
             ? $_SERVER['HOME'] . '/.zer0_history'
             : '/dev/null';
+        $this->args = $args;
     }
 
     /**
