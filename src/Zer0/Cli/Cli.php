@@ -155,6 +155,9 @@ class Cli
         if ($command === null) {
             $command = 'index';
         }
+        $controllerArgs = explode(':', $command);
+        $command = array_shift($controllerArgs);
+
         $route = $this->config->Commands->{lcfirst($command)} ?? null;
         if ($route) {
             $route['action'] = array_shift($args);
@@ -166,16 +169,17 @@ class Cli
                 'action'     => $command,
             ];
         }
-        $this->handleCommand($route['controller'], $route['action'] ?? 'index', $args);
+        $this->handleCommand([$route['controller'], $controllerArgs], $route['action'] ?? 'index', $args);
     }
 
     /**
      * @param string $controllerClass
+     * @param,array $args
      *
      * @return AbstractController
      * @throws NotFound
      */
-    public function instantiateController (string $controllerClass): AbstractController
+    public function instantiateController (string $controllerClass, array $args = []): AbstractController
     {
         $defaultPrefix = $this->config->default_controller_ns . '\\';
 
@@ -195,18 +199,26 @@ class Cli
             $config     = $this->config->Controllers->{$configName} ?? null;
         }
 
-        return new $controllerClass($this, $this->app, $config);
+        return new $controllerClass($this, $this->app, $config, $args);
     }
 
     /**
-     * @param string $controllerClass
+     * @param mixed $controllerClass
      * @param string $action
      * @param array  $args
      *
      * @return void
      */
-    public function handleCommand ($controllerClass, string $action, array $args = []): void
+    public function handleCommand ($controller, string $action, array $args = []): void
     {
+        if (is_string($controller)) {
+            $controllerClass = $controllerClass;
+            $controllerArgs = [];
+        }
+        else {
+            [$controllerClass, $controllerArgs] = $controller;
+        }
+
         try {
             if ($controllerClass === '') {
                 throw new NotFound('$controllerClass cannot be empty');
@@ -219,7 +231,7 @@ class Cli
 
             $controller = $controllerClass instanceof ControllerInterface
                 ? $controllerClass
-                : $this->instantiateController($controllerClass);
+                : $this->instantiateController($controllerClass, $controllerArgs);
 
             if (!method_exists($controller, $method)) {
                 throw new NotFound($action . ': command not found 😞');
@@ -326,16 +338,16 @@ class Cli
      * @param mixed  $var
      * @param string $style
      */
-    public function colorfulJson ($var): void
+    public function colorfulJson ($var, bool $pretty = false): void
     {
-        $this->_colorfulJson($var);
+        $this->_colorfulJson($var, $pretty);
     }
 
     /**
      * @param mixed  $var
      * @param string $style
      */
-    private function _colorfulJson ($var, ?string $style = null, array $stack = []): void
+    private function _colorfulJson ($var, bool $pretty = false, ?string $style = null, array $stack = []): void
     {
         $styleScheme = [
             'bracket'    => 'fg(green)',
@@ -376,10 +388,21 @@ class Cli
             foreach ($var as $key => $value) {
                 if ($i > 0) {
                     $this->write(', ', $styleScheme['comma']);
+                    if ($pretty) {
+                        $this->writeln('');
+                    }
+                } else {
+                    if ($pretty) {
+                        $this->writeln('');
+                    }
                 }
                 if (!$isArray) {
+                    if ($pretty) {
+                        $this->write(str_repeat("\t", max(1, count($stack))));
+                    }
                     $this->_colorfulJson(
                         $key,
+                        $pretty,
                         (is_scalar($value) || is_null($value)) ? $styleScheme['key_scalar'] : $styleScheme['key']
                     );
                     $this->write(': ', $styleScheme['colon']);
@@ -389,10 +412,14 @@ class Cli
                 }
                 else {
                     $stack[] = $value;
-                    $this->_colorfulJson($value, $style, $stack);
+                    $this->_colorfulJson($value, $pretty, $style, $stack);
                     array_pop($stack);
                 }
                 ++$i;
+            }
+            if ($pretty) {
+                $this->writeln('');
+                $this->write((string) str_repeat("\t", count($stack) - 1));
             }
             $this->write($isArray ? ']' : '}', $styleScheme['bracket']);
         }
