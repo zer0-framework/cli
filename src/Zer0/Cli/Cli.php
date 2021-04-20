@@ -212,7 +212,7 @@ class Cli
     public function handleCommand ($controller, string $action, array $args = []): void
     {
         if (is_string($controller)) {
-            $controllerClass = $controllerClass;
+            $controllerClass = $controller;
             $controllerArgs = [];
         }
         else {
