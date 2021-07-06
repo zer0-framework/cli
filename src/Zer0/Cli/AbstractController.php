@@ -165,6 +165,7 @@ abstract class AbstractController implements ControllerInterface
      */
     public function readline (callable $callback, callable $getAutocompleteWords): void
     {
+        $this->cli->readlineMode = true;
         $rl            = new class($this, $this->historyFile, $getAutocompleteWords) extends Readline {
             /**
              * @var AbstractController

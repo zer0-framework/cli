@@ -28,6 +28,11 @@ class Cli
     /**
      * @var bool
      */
+    public $readlineMode = false;
+
+    /**
+     * @var bool
+     */
     protected $colorize = true;
 
     /**
@@ -211,27 +216,31 @@ class Cli
      */
     public function handleCommand ($controller, string $action, array $args = []): void
     {
-        if (is_string($controller)) {
-            $controllerClass = $controller;
-            $controllerArgs = [];
-        }
-        else {
-            [$controllerClass, $controllerArgs] = $controller;
-        }
-
         try {
-            if ($controllerClass === '') {
-                throw new NotFound('$controllerClass cannot be empty');
+            if (!is_object($controller)) {
+                if (is_string($controller)) {
+                    $controllerClass = $controller;
+                    $controllerArgs  = [];
+                }
+                else if (is_array($controller)) {
+                    [$controllerClass, $controllerArgs] = $controller;
+                }
+
+                if ($controllerClass === '') {
+                    throw new NotFound('$controllerClass cannot be empty');
+                }
+
+                $controller = $controllerClass instanceof ControllerInterface
+                    ? $controllerClass
+                    : $this->instantiateController($controllerClass, $controllerArgs);
+
             }
+
             if ($action === '') {
                 $action = 'index';
             }
 
             $method = str_replace(' ', '', ucwords(str_replace('-', ' ', $action))) . 'Action';
-
-            $controller = $controllerClass instanceof ControllerInterface
-                ? $controllerClass
-                : $this->instantiateController($controllerClass, $controllerArgs);
 
             if (!method_exists($controller, $method)) {
                 throw new NotFound($action . ': command not found 😞');
@@ -271,12 +280,15 @@ class Cli
     {
         if ($exception instanceof InvalidArgument) {
             $this->writeln($exception->getMessage());
-
-            return;
+        } else {
+            $this->write('Uncaught exception:', 'fg(white) bg(red)');
+            $this->writeln(' ' . (string)$exception);
+            Cursor::bip();
         }
-        $this->write('Uncaught exception:', 'fg(white) bg(red)');
-        $this->writeln(' ' . (string)$exception);
-        Cursor::bip();
+
+        if (!$this->readlineMode) {
+            exit(1);
+        }
     }
 
     /**
