@@ -191,7 +191,7 @@ abstract class AbstractController implements ControllerInterface
                 $this->historyFile    = $historyFile;
                 $oldMapping           = $this->_mapping["\t"];
                 $this->_mapping["\t"] = function (Readline $rl) use ($oldMapping, $getAutocompleteWords) {
-                    if (!strlen($rl->getLine())) {
+                    if (!strlen($rl->getLine()  ?? '')) {
                         \Hoa\Console\Cursor::clear('line');
 
                         foreach ($getAutocompleteWords('') as $word) {

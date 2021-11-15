@@ -166,7 +166,7 @@ class Cli
         $route = $this->config->Commands->{lcfirst($command)} ?? null;
         if ($route) {
             $route['action'] = array_shift($args);
-            $route['action'] = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $route['action']))));
+            $route['action'] = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', (string) $route['action']))));
         }
         else {
             $route = [
